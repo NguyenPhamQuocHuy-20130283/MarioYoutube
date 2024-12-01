@@ -44,7 +44,7 @@ public class Window implements Observer {
 
     // NOTE: Turn this to false if you want to include the editor in the game
     //       true means it will just ship the game without the editor and ImGui stuff
-    public static final boolean RELEASE_BUILD = true;
+    public static final boolean RELEASE_BUILD = false;
 
     private Window() {
         this.width = 1920;

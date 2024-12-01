@@ -12,6 +12,7 @@ import util.AssetPool;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public class LevelEditorSceneInitializer extends SceneInitializer {
 
@@ -107,246 +108,138 @@ public class LevelEditorSceneInitializer extends SceneInitializer {
 
         if (ImGui.beginTabBar("WindowTabBar")) {
             if (ImGui.beginTabItem("Solid Blocks")) {
-
-                ImVec2 windowPos = new ImVec2();
-                ImGui.getWindowPos(windowPos);
-                ImVec2 windowSize = new ImVec2();
-                ImGui.getWindowSize(windowSize);
-                ImVec2 itemSpacing = new ImVec2();
-                ImGui.getStyle().getItemSpacing(itemSpacing);
-
-                float windowX2 = windowPos.x + windowSize.x;
-                for (int i = 0; i < sprites.size(); i++) {
-                    if (i == 34) continue;
-                    if (i >= 38 && i < 61) continue;
-
-                    Sprite sprite = sprites.getSprite(i);
-                    float spriteWidth = sprite.getWidth() * 4;
-                    float spriteHeight = sprite.getHeight() * 4;
-                    int id = sprite.getTexId();
-                    Vector2f[] texCoords = sprite.getTexCoords();
-
-                    ImGui.pushID(i);
-                    if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                        GameObject object = Prefabs.generateSpriteObject(sprite, 0.25f, 0.25f);
-                        Rigidbody2D rb = new Rigidbody2D();
-                        rb.setBodyType(BodyType.Static);
-                        object.addComponent(rb);
-                        Box2DCollider b2d = new Box2DCollider();
-                        b2d.setHalfSize(new Vector2f(0.25f, 0.25f));
-                        object.addComponent(b2d);
-                        object.addComponent(new Ground());
-                        if (i == 12) {
-                            object.addComponent(new BreakableBrick());
-                        }
-                        levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                    }
-                    ImGui.popID();
-
-                    ImVec2 lastButtonPos = new ImVec2();
-                    ImGui.getItemRectMax(lastButtonPos);
-                    float lastButtonX2 = lastButtonPos.x;
-                    float nextButtonX2 = lastButtonX2 + itemSpacing.x + spriteWidth;
-                    if (i + 1 < sprites.size() && nextButtonX2 < windowX2) {
-                        ImGui.sameLine();
-                    }
-                }
-
+                displaySprites(sprites, 0, 34, 38, 61);
                 ImGui.endTabItem();
             }
 
             if (ImGui.beginTabItem("Decoration Blocks")) {
-                ImVec2 windowPos = new ImVec2();
-                ImGui.getWindowPos(windowPos);
-                ImVec2 windowSize = new ImVec2();
-                ImGui.getWindowSize(windowSize);
-                ImVec2 itemSpacing = new ImVec2();
-                ImGui.getStyle().getItemSpacing(itemSpacing);
-
-                float windowX2 = windowPos.x + windowSize.x;
-                for (int i = 34; i < 61; i++) {
-                    if (i >= 35 && i < 38) continue;
-                    if (i >= 42 && i < 45) continue;
-
-                    Sprite sprite = sprites.getSprite(i);
-                    float spriteWidth = sprite.getWidth() * 4;
-                    float spriteHeight = sprite.getHeight() * 4;
-                    int id = sprite.getTexId();
-                    Vector2f[] texCoords = sprite.getTexCoords();
-
-                    ImGui.pushID(i);
-                    if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                        GameObject object = Prefabs.generateSpriteObject(sprite, 0.25f, 0.25f);
-                        levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                    }
-                    ImGui.popID();
-
-                    ImVec2 lastButtonPos = new ImVec2();
-                    ImGui.getItemRectMax(lastButtonPos);
-                    float lastButtonX2 = lastButtonPos.x;
-                    float nextButtonX2 = lastButtonX2 + itemSpacing.x + spriteWidth;
-                    if (i + 1 < sprites.size() && nextButtonX2 < windowX2) {
-                        ImGui.sameLine();
-                    }
-                }
-
+                displaySprites(sprites, 34, 35, 38, 42, 45, 61);
                 ImGui.endTabItem();
             }
 
             if (ImGui.beginTabItem("Prefabs")) {
-                int uid = 0;
-                Spritesheet playerSprites = AssetPool.getSpritesheet("assets/images/spritesheet.png");
-                Sprite sprite = playerSprites.getSprite(0);
-                float spriteWidth = sprite.getWidth() * 4;
-                float spriteHeight = sprite.getHeight() * 4;
-                int id = sprite.getTexId();
-                Vector2f[] texCoords = sprite.getTexCoords();
-
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateMario();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                Spritesheet items = AssetPool.getSpritesheet("assets/images/items.png");
-                sprite = items.getSprite(0);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateQuestionBlock();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = items.getSprite(7);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateCoin();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = playerSprites.getSprite(14);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateGoomba();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                Spritesheet turtle = AssetPool.getSpritesheet("assets/images/turtle.png");
-                sprite = turtle.getSprite(0);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateTurtle();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = items.getSprite(6);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateFlagtop();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = items.getSprite(33);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generateFlagPole();
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                Spritesheet pipes = AssetPool.getSpritesheet("assets/images/pipes.png");
-                sprite = pipes.getSprite(0);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generatePipe(Direction.Down);
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = pipes.getSprite(1);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generatePipe(Direction.Up);
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = pipes.getSprite(2);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generatePipe(Direction.Right);
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-                ImGui.sameLine();
-
-                sprite = pipes.getSprite(3);
-                id = sprite.getTexId();
-                texCoords = sprite.getTexCoords();
-                ImGui.pushID(uid++);
-                if (ImGui.imageButton(id, spriteWidth, spriteHeight, texCoords[2].x, texCoords[0].y, texCoords[0].x, texCoords[2].y)) {
-                    GameObject object = Prefabs.generatePipe(Direction.Left);
-                    levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
-                }
-                ImGui.popID();
-
+                displayPrefabSprites();
                 ImGui.endTabItem();
             }
 
             if (ImGui.beginTabItem("Sounds")) {
-                Collection<Sound> sounds = AssetPool.getAllSounds();
-                for (Sound sound : sounds) {
-                    File tmp = new File(sound.getFilepath());
-                    if (ImGui.button(tmp.getName())) {
-                        if (!sound.isPlaying()) {
-                            sound.play();
-                        } else {
-                            sound.stop();
-                        }
-                    }
-
-                    if (ImGui.getContentRegionAvailX() > 100) {
-                        ImGui.sameLine();
-                    }
-                }
-
+                displaySounds();
                 ImGui.endTabItem();
             }
             ImGui.endTabBar();
         }
 
         ImGui.end();
+    }
+
+    private void displaySprites(Spritesheet sprites, int start, int... ranges) {
+        ImVec2 windowPos = new ImVec2();
+        ImGui.getWindowPos(windowPos);
+        ImVec2 windowSize = new ImVec2();
+        ImGui.getWindowSize(windowSize);
+        ImVec2 itemSpacing = new ImVec2();
+        ImGui.getStyle().getItemSpacing(itemSpacing);
+
+        float windowX2 = windowPos.x + windowSize.x;
+        for (int i = start; i < sprites.size(); i++) {
+            boolean skip = false;
+            for (int j = 0; j < ranges.length; j += 2) {
+                if (i >= ranges[j] && i < ranges[j + 1]) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip) continue;
+
+            Sprite sprite = sprites.getSprite(i);
+            float spriteWidth = sprite.getWidth() * 4;
+            float spriteHeight = sprite.getHeight() * 4;
+            int id = sprite.getTexId();
+            Vector2f[] texCoords = sprite.getTexCoords();
+
+            ImGui.pushID(i);
+            if (ImGui.button("##button" + i, spriteWidth, spriteHeight)) {
+                GameObject object = Prefabs.generateSpriteObject(sprite, 0.25f, 0.25f);
+                if (start == 0) {
+                    Rigidbody2D rb = new Rigidbody2D();
+                    rb.setBodyType(BodyType.Static);
+                    object.addComponent(rb);
+                    Box2DCollider b2d = new Box2DCollider();
+                    b2d.setHalfSize(new Vector2f(0.25f, 0.25f));
+                    object.addComponent(b2d);
+                    object.addComponent(new Ground());
+                    if (i == 12) {
+                        object.addComponent(new BreakableBrick());
+                    }
+                }
+                levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
+            }
+            ImGui.sameLine();
+            ImGui.image(id, spriteWidth, spriteHeight, texCoords[0].x, texCoords[0].y, texCoords[2].x, texCoords[2].y);
+            ImGui.popID();
+
+            ImVec2 lastButtonPos = new ImVec2();
+            ImGui.getItemRectMax(lastButtonPos);
+            float lastButtonX2 = lastButtonPos.x;
+            float nextButtonX2 = lastButtonX2 + itemSpacing.x + spriteWidth;
+            if (i + 1 < sprites.size() && nextButtonX2 < windowX2) {
+                ImGui.sameLine();
+            }
+        }
+    }
+
+    private void displayPrefabSprites() {
+        int uid = 0;
+        Spritesheet playerSprites = AssetPool.getSpritesheet("assets/images/spritesheet.png");
+        Spritesheet items = AssetPool.getSpritesheet("assets/images/items.png");
+        Spritesheet turtle = AssetPool.getSpritesheet("assets/images/turtle.png");
+        Spritesheet pipes = AssetPool.getSpritesheet("assets/images/pipes.png");
+
+        displayPrefabSprite(playerSprites, 0, uid++, Prefabs::generateMario);
+        displayPrefabSprite(items, 0, uid++, Prefabs::generateQuestionBlock);
+        displayPrefabSprite(items, 7, uid++, Prefabs::generateCoin);
+        displayPrefabSprite(playerSprites, 14, uid++, Prefabs::generateGoomba);
+        displayPrefabSprite(turtle, 0, uid++, Prefabs::generateTurtle);
+        displayPrefabSprite(items, 6, uid++, Prefabs::generateFlagtop);
+        displayPrefabSprite(items, 33, uid++, Prefabs::generateFlagPole);
+        displayPrefabSprite(pipes, 0, uid++, () -> Prefabs.generatePipe(Direction.Down));
+        displayPrefabSprite(pipes, 1, uid++, () -> Prefabs.generatePipe(Direction.Up));
+        displayPrefabSprite(pipes, 2, uid++, () -> Prefabs.generatePipe(Direction.Right));
+        displayPrefabSprite(pipes, 3, uid++, () -> Prefabs.generatePipe(Direction.Left));
+    }
+
+    private void displayPrefabSprite(Spritesheet spritesheet, int spriteIndex, int uid, Supplier<GameObject> prefabSupplier) {
+        Sprite sprite = spritesheet.getSprite(spriteIndex);
+        float spriteWidth = sprite.getWidth() * 4;
+        float spriteHeight = sprite.getHeight() * 4;
+        int id = sprite.getTexId();
+        Vector2f[] texCoords = sprite.getTexCoords();
+
+        ImGui.pushID(uid);
+        if (ImGui.button("##button" + uid, spriteWidth, spriteHeight)) {
+            GameObject object = prefabSupplier.get();
+            levelEditorStuff.getComponent(MouseControls.class).pickupObject(object);
+        }
+        ImGui.sameLine();
+        ImGui.image(id, spriteWidth, spriteHeight, texCoords[0].x, texCoords[0].y, texCoords[2].x, texCoords[2].y);
+        ImGui.popID();
+    }
+
+    private void displaySounds() {
+        Collection<Sound> sounds = AssetPool.getAllSounds();
+        for (Sound sound : sounds) {
+            File tmp = new File(sound.getFilepath());
+            if (ImGui.button(tmp.getName())) {
+                if (!sound.isPlaying()) {
+                    sound.play();
+                } else {
+                    sound.stop();
+                }
+            }
+
+            if (ImGui.getContentRegionAvailX() > 100) {
+                ImGui.sameLine();
+            }
+        }
     }
 }
